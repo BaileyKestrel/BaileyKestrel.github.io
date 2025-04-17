@@ -70,7 +70,9 @@ dms_to_dd <- function(dms_str) {
 
 dat$latitude <- dms_to_dd(dat$latitude)
 dat$longitude <- dms_to_dd(dat$longitude)
+```
 
+```{r include=FALSE}
 dat <- dat %>%
   mutate(date = as.Date(date),
          year = year(date),
@@ -79,7 +81,7 @@ dat <- dat %>%
   filter(!is.na(latitude), !is.na(longitude))
 ```
 ________________________________________________________________________________
-## Species Distribution Maps
+# Species Distribution Maps
 ```{r Distribution Maps Preparation, include=FALSE}
 map_world <- map_data("world")
 north_america <- map_world %>% filter(region %in% c("USA", "Canada"))
@@ -93,8 +95,9 @@ color_palette <- c(
 dat_latlong <- dat %>%
   filter(!is.na(longitude), !is.na(latitude))
 ```
-### Static Capture Map
-```{r Static Capture Map, echo=FALSE}
+
+
+```{r Scatter Plot of all Captures, echo=FALSE}
 ggplot() +
   # create base map 
   geom_polygon(data = north_america, aes(x = long, y = lat, group = group),
@@ -106,13 +109,15 @@ ggplot() +
               alpha = 0.2, stroke = 0.3,
               color = "black", width = 0.2, height = 0.2) +
   coord_cartesian(xlim = c(-175, -50), ylim = c(25, 75)) +
-  labs(x = "Longitude", y = "Latitude", title = "Static Capture Map") +
+  labs(x = "Longitude", y = "Latitude", title = "Scatter Plot of all Chickadee Captures") +
   theme_minimal() +
   guides(fill = guide_legend(override.aes = list(alpha = 1, size = 5))) +
-  scale_fill_manual(values = color_palette)
+  scale_fill_manual(values = color_palette) +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 15))
 ```
 
-### Faceted Hexbin Density Map
+
 ```{r Faceted Hexbin Density Map, echo=FALSE}
 ggplot() +
   geom_polygon(data = north_america, aes(x = long, y = lat, group = group),
@@ -120,14 +125,16 @@ ggplot() +
   geom_hex(data = dat_latlong,
            aes(x = longitude, y = latitude, fill = ..count..),
            bins = 70, alpha = 0.7) +
-  labs(x = "Longitude", y = "Latitude", title = "Faceted Hexbin Density Map") +
+  labs(x = "Longitude", y = "Latitude", title = "Faceted Hexbin Density Map of Chickadee Captures") +
   scale_fill_viridis_c(option = "plasma") +
   coord_cartesian(xlim = c(-175, -50), ylim = c(25, 75)) +
   facet_wrap(~species) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 15))
 ```
 
-### Animated Range Over Time
+
 ```{r Animated Range Over Time, include=FALSE}
 dat_year <- dat %>% filter(!is.na(year)) %>%
   mutate(year = as.integer(year))
@@ -143,13 +150,15 @@ anim_plot <- ggplot() +
   facet_wrap(~species) +
   theme_minimal(base_size = 14) +
   labs(title = 'Year: {current_frame}', 
-       subtitle = 'Species density in North America',
+       subtitle = 'Animated Faceted Hexbin Density Map of Chickadee Captures',
        fill = "Capture Count",
        x = "Longitude",
        y = "Latitude") +
-  transition_manual(year)
+  transition_manual(year) +
+  theme(plot.title = element_text(size = 20),
+        axis.title = element_text(size = 15))
 ```
-```{r Animate, echo=FALSE}
+```{r Animate, eval=FALSE, include=FALSE}
 # Animate
 animate(anim_plot, nframes = 100, fps = 5)
 ```
@@ -285,3 +294,6 @@ ggplot(recaptured_unique_counts, aes(x = year, y = unique_recaptures, fill = spe
   theme_minimal() +
   scale_fill_manual(values = color_palette)
 ```
+
+## Results and Discussion
+
